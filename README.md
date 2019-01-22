@@ -8,9 +8,8 @@ It is fully free and fully open source. The license is Apache 2.0, meaning you a
 
 ## How to write a Java filter
 
-> <b>IMPORTANT NOTE:</b> Native support for Java plugins in Logstash is in the experimental phase. While unnecessary
-changes will be avoided, anything may change in future phases. See the ongoing work on the 
-[beta phase](https://github.com/elastic/logstash/pull/10232) of Java plugin support for the most up-to-date status.
+> <b>IMPORTANT NOTE:</b> Native support for Java plugins in Logstash is in the beta phase. While no API changes are
+anticipated, some changes may be necessary before GA.
 
 ### Overview 
 
@@ -19,7 +18,7 @@ Native support for Java plugins in Logstash consists of several components inclu
 * APIs for developing Java plugins. The APIs are in the `co.elastic.logstash.api` package. If a Java plugin 
 references any classes or specific concrete implementations of API interfaces outside that package, breakage may 
 occur because the implementation of classes outside of the API package may change at any time.
-* Tooling to automate the packaging and deployment of Java plugins in Logstash [not complete as of the experimental phase]
+* Tooling to automate the packaging and deployment of Java plugins in Logstash [not complete as of the beta phase]
 
 To develop a new Java filter for Logstash, you write a new Java class that conforms to the Logstash Java Filter
 API, package it, and install it with the `logstash-plugin` utility. We'll go through each of those steps in this guide.
@@ -37,20 +36,23 @@ configured to reverse the `day_of_week` field, an event with `day_of_week: "Mond
 public class JavaFilterExample implements Filter {
 
     public static final PluginConfigSpec<String> SOURCE_CONFIG =
-            Configuration.stringSetting("source", "message");
+            PluginConfigSpec.stringSetting("source", "message");
 
+    private String id;
     private String sourceField;
 
-    public JavaFilterExample(Configuration config, Context context) {
+    public JavaFilterExample(String id, Configuration config, Context context) {
+        this.id = id;
         this.sourceField = config.get(SOURCE_CONFIG);
     }
 
     @Override
-    public Collection<Event> filter(Collection<Event> events) {
+    public Collection<Event> filter(Collection<Event> events, FilterMatchListener matchListener) {
         for (Event e : events) {
             Object f = e.getField(sourceField);
             if (f instanceof String) {
                 e.setField(sourceField, StringUtils.reverse((String)f));
+                matchListener.filterMatched(e);
             }
         }
         return events;
@@ -59,6 +61,11 @@ public class JavaFilterExample implements Filter {
     @Override
     public Collection<PluginConfigSpec<?>> configSchema() {
         return Collections.singletonList(SOURCE_CONFIG);
+    }
+
+    @Override
+    public String getId() {
+        return this.id;
     }
 }
 ```
@@ -76,14 +83,14 @@ There are two things to note about the class declaration:
    in the Logstash pipeline definition. For example, this filter would be referenced in the filter section of the
    Logstash pipeline defintion as `filter { java_filter_example => { .... } }`
   * The value of the `name` property must match the name of the class excluding casing and underscores.
-* The class must implement the `co.elastic.logstash.api.v0.Filter` interface.
+* The class must implement the `co.elastic.logstash.api.Filter` interface.
 
 #### Plugin settings
 
 The snippet below contains both the setting definition and the method referencing it:
 ```java
 public static final PluginConfigSpec<String> SOURCE_CONFIG =
-        Configuration.stringSetting("source", "message");
+        PluginConfigSpec.stringSetting("source", "message");
 
 @Override
 public Collection<PluginConfigSpec<?>> configSchema() {
@@ -101,16 +108,18 @@ no unsupported settings are present.
 
 #### Constructor and initialization
 ```java
+private String id;
 private String sourceField;
 
-public JavaFilterExample(Configuration config, Context context) {
+public JavaFilterExample(String id, Configuration config, Context context) {
+    this.id = id;
     this.sourceField = config.get(SOURCE_CONFIG);
 }
 ```
-All Java filter plugins must have a constructor taking both a `Configuration` and `Context` argument. This is the
-constructor that will be used to instantiate them at runtime. The retrieval and validation of all plugin settings
-should occur in this constructor. In this example, the name of the field to be reversed in each event is retrieved
-from its setting and stored in a local variable so that it can be used later in the `filter` method. 
+All Java filter plugins must have a constructor taking a `String` id and a `Configuration` and `Context` argument. 
+This is the constructor that will be used to instantiate them at runtime. The retrieval and validation of all plugin 
+settings should occur in this constructor. In this example, the name of the field to be reversed in each event is 
+retrieved from its setting and stored in a local variable so that it can be used later in the `filter` method. 
 
 Any additional initialization may occur in the constructor as well. If there are any unrecoverable errors encountered
 in the configuration or initialization of the filter plugin, a descriptive exception should be thrown. The exception
@@ -119,11 +128,12 @@ will be logged and will prevent Logstash from starting.
 #### Filter method
 ```java
 @Override
-public Collection<Event> filter(Collection<Event> events) {
+public Collection<Event> filter(Collection<Event> events, FilterMatchListener matchListener) {
     for (Event e : events) {
         Object f = e.getField(sourceField);
         if (f instanceof String) {
             e.setField(sourceField, StringUtils.reverse((String)f));
+            matchListener.filterMatched(e);
         }
     }
     return events;
@@ -149,6 +159,25 @@ changes were made.
 
 In the example above, the value of the `source` field is retrieved from each event and reversed if it is a string
 value. Because each event is mutated in place, the incoming `events` collection can be returned.
+
+The `matchListener` is the mechanism by which filters indicate which events "match". The common actions for filters 
+such as `add_field` and `add_tag` are applied only to events that are designated as "matching". Some filters such as 
+the [grok filter](https://www.elastic.co/guide/en/logstash/current/plugins-filters-grok.html) have a clear definition 
+for what constitutes a matching event and will notify the listener only for matching events. Other filters such as the
+[UUID filter](https://www.elastic.co/guide/en/logstash/current/plugins-filters-uuid.html) have no specific match 
+criteria and should notify the listener for every event filtered. In this example, the filter notifies the match
+listener for any event that had a `String` value in its `source` field and was therefore able to be reversed.
+
+#### getId method
+
+```java
+@Override
+public String getId() {
+    return id;
+}
+```
+For filter plugins, the `getId` method should always return the id that was provided to the plugin through its
+constructor at instantiation time.
 
 #### Unit tests
 Lastly, but certainly not least importantly, unit tests are strongly encouraged. The example filter plugin includes
@@ -179,7 +208,7 @@ future phase of the Java plugin support project, these Ruby source files will be
 ```
 Gem::Specification.new do |s|
   s.name            = 'logstash-filter-java_filter_example'
-  s.version         = '0.0.1'
+  s.version         = PLUGIN_VERSION
   s.licenses        = ['Apache-2.0']
   s.summary         = "Example filter using Java plugin API"
   s.description     = ""
@@ -201,8 +230,9 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'logstash-devutils'
 end
 ```
-The above file can be used unmodified except that `s.name` must follow the `logstash-filter-<filter-name>` pattern
-and `s.version` must match the `project.version` specified in the `build.gradle` file.
+The above file can be used unmodified except that `s.name` must follow the `logstash-filter-<filter-name>` pattern.
+Also, `s.version` must match the `project.version` specified in the `build.gradle` file though those both should
+be read from the `VERSION` file in this example.
 
 `lib/logstash/filters/<filter-name>.rb`
 ```

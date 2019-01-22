@@ -8,7 +8,7 @@ apply plugin: 'maven'
 apply plugin: "distribution"
 
 group 'org.logstash.javaapi'
-version "${new File("VERSION").text.trim()}"
+version "${file("VERSION").text.trim()}"
 
 description = "Example Java filter implementation"
 
