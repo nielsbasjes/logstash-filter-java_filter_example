@@ -17,6 +17,13 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
 
+        <!-- The java package of the filter class. -->
+        <filter.package>org.logstash.javaapi</filter.package>
+        <!-- The java classname of the filter class. -->
+        <filter.class>JavaFilterExample</filter.class>
+        <!--The name of the filter, must be the same as used in the @LogstashPlugin(name = "xxx") in the filter class.-->
+        <filter.name>java_filter_example</filter.name>
+
     </properties>
 
     <!-- Not in maven central yet. So do this first: -->
@@ -66,6 +73,71 @@
         <plugins>
 
             <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>maven-replacer-plugin</artifactId>
+                <version>1.4.1</version>
+                <executions>
+
+                    <execution>
+                        <id>Generate filter file</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <configuration>
+                            <file>src/main/code-gen/FILTER_NAME.rb</file>
+                            <outputFile>${project.build.directory}/lib/logstash/filters/${filter.name}.rb</outputFile>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>Generate jars file</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <configuration>
+                            <file>src/main/code-gen/logstash-filter-FILTER_NAME_jars.rb</file>
+                            <outputFile>${project.build.directory}/lib/logstash-filter-${filter.name}_jars.rb</outputFile>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>Generate gemspec file</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <configuration>
+                            <file>src/main/code-gen/logstash-filter-FILTER_NAME.gemspec</file>
+                            <outputFile>${project.build.directory}/logstash-filter-${filter.name}.gemspec</outputFile>
+                        </configuration>
+                    </execution>
+
+                </executions>
+                <configuration>
+                    <replacements>
+                        <replacement>
+                            <token>FILTER_PACKAGE</token>
+                            <value>${filter.package}</value>
+                        </replacement>
+                        <replacement>
+                            <token>FILTER_NAME</token>
+                            <value>${filter.name}</value>
+                        </replacement>
+                        <replacement>
+                            <token>FILTER_VERSION</token>
+                            <value>${project.version}</value>
+                        </replacement>
+                        <replacement>
+                            <token>FILTER_CLASS</token>
+                            <value>${filter.class}</value>
+                        </replacement>
+                    </replacements>
+                </configuration>
+            </plugin>
+
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.0.0</version>
@@ -103,6 +175,7 @@
                 </executions>
                 <configuration>
                     <executable>gem</executable>
+                    <workingDirectory>${project.build.directory}</workingDirectory>
                     <arguments>
                         <argument>build</argument>
                         <argument>logstash-filter-java_filter_example.gemspec</argument>

@@ -1,8 +1,8 @@
 Gem::Specification.new do |s|
-  s.name            = 'logstash-filter-java_filter_example'
-  s.version         = '0.0.1'
+  s.name            = 'logstash-filter-FILTER_NAME'
+  s.version         = 'FILTER_VERSION'
   s.licenses        = ['Apache-2.0']
-  s.summary         = "Example filter using Java plugin API"
+  s.summary         = "Example filter using Java plugin API."
   s.description     = ""
   s.authors         = ['Elasticsearch']
   s.email           = 'info@elastic.co'
@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib', 'vendor/jar-dependencies']
 
   # Files
-  s.files = Dir["lib/**/*","spec/**/*","*.gemspec","*.md","CONTRIBUTORS","Gemfile","LICENSE","NOTICE.TXT", "vendor/jar-dependencies/**/*.jar", "vendor/jar-dependencies/**/*.rb", "VERSION", "docs/**/*"]
+  s.files = Dir["lib/**/*","spec/**/*","*.gemspec","*.md","CONTRIBUTORS","Gemfile","LICENSE","NOTICE.TXT", "**/*.jar", "**/*.rb", "VERSION", "docs/**/*"]
 
   # Special flag to let us know this is actually a logstash plugin
   s.metadata = { 'logstash_plugin' => 'true', 'logstash_group' => 'filter'}
