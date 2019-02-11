@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib', 'vendor/jar-dependencies']
 
   # Files
-  s.files = Dir["lib/**/*","spec/**/*","*.gemspec","*.md","CONTRIBUTORS","Gemfile","LICENSE","NOTICE.TXT", "**/*.jar", "**/*.rb", "VERSION", "docs/**/*"]
+  s.files = Dir["lib/**/*","spec/**/*","*.gemspec","*.md","CONTRIBUTORS","Gemfile","LICENSE","NOTICE.TXT", "vendor/jar-dependencies/**/*.jar", "vendor/jar-dependencies/**/*.rb", "VERSION", "docs/**/*"]
 
   # Special flag to let us know this is actually a logstash plugin
   s.metadata = { 'logstash_plugin' => 'true', 'logstash_group' => 'filter'}

@@ -4,8 +4,8 @@
     xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.logstash.filters</groupId>
-    <artifactId>logstash-java-filter-example</artifactId>
+    <groupId>org.logstash.examples.java</groupId>
+    <artifactId>logstash-example-filter</artifactId>
     <version>0.0.1</version>
     <packaging>jar</packaging>
 
@@ -18,11 +18,17 @@
         <maven.compiler.target>1.8</maven.compiler.target>
 
         <!-- The java package of the filter class. -->
-        <filter.package>org.logstash.javaapi</filter.package>
+        <filter.package>org.example.logstash</filter.package>
+        <filter.package.dir>org/example/logstash</filter.package.dir>
+
+        <!-- IMPORTANT: The name and the class of the filter must be the SAME where -->
+        <!-- the filter.name is lowercase with '_' -->
+        <!-- the filter.class is CamelCase  -->
+
+        <!-- The name of the filter, must be the same as used in the @LogstashPlugin(name = "xxx") in the filter class. -->
+        <filter.name>reverse_string</filter.name>
         <!-- The java classname of the filter class. -->
-        <filter.class>JavaFilterExample</filter.class>
-        <!--The name of the filter, must be the same as used in the @LogstashPlugin(name = "xxx") in the filter class.-->
-        <filter.name>java_filter_example</filter.name>
+        <filter.class>ReverseString</filter.class>
 
     </properties>
 
@@ -133,6 +139,10 @@
                             <token>FILTER_CLASS</token>
                             <value>${filter.class}</value>
                         </replacement>
+                        <replacement>
+                            <token>PROJECT_NAME</token>
+                            <value>${project.artifactId}</value>
+                        </replacement>
                     </replacements>
                 </configuration>
             </plugin>
@@ -155,6 +165,7 @@
                                     <include>*:*</include>
                                 </includes>
                             </artifactSet>
+                            <outputFile>${project.build.directory}/vendor/jar-dependencies/${filter.package.dir}/logstash-filter-${filter.name}/${project.version}/logstash-filter-${filter.name}-${project.version}.jar</outputFile>
                         </configuration>
                     </execution>
 
@@ -178,7 +189,7 @@
                     <workingDirectory>${project.build.directory}</workingDirectory>
                     <arguments>
                         <argument>build</argument>
-                        <argument>logstash-filter-java_filter_example.gemspec</argument>
+                        <argument>logstash-filter-${filter.name}.gemspec</argument>
                     </arguments>
                 </configuration>
             </plugin>

@@ -1,4 +1,4 @@
-package org.logstash.javaapi;
+package org.example.logstash;
 
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
@@ -9,14 +9,14 @@ import org.logstash.Event;
 import java.util.Collection;
 import java.util.Collections;
 
-public class JavaFilterExampleTest {
+public class ReverseStringTest {
 
     @Test
     public void testJavaExampleFilter() {
-        String sourceField = "foo";
-        Configuration config = new Configuration(Collections.singletonMap("source", sourceField));
-        Context context = new Context();
-        JavaFilterExample filter = new JavaFilterExample(config, context);
+        String        sourceField = "foo";
+        Configuration config      = new Configuration(Collections.singletonMap("source", sourceField));
+        Context       context     = new Context();
+        ReverseString filter      = new ReverseString(config, context);
 
         Event e = new Event();
         e.setField(sourceField, "abcdef");

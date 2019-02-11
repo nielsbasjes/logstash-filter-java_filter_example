@@ -1,4 +1,4 @@
-package org.logstash.javaapi;
+package org.example.logstash;
 
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
@@ -11,16 +11,16 @@ import org.logstash.Event;
 import java.util.Collection;
 import java.util.Collections;
 
-// class name must match plugin name
-@LogstashPlugin(name = "java_filter_example")
-public class JavaFilterExample implements Filter {
+// IMPORTANT: class name must match plugin name
+@LogstashPlugin(name = "reverse_string")
+public class ReverseString implements Filter {
 
     public static final PluginConfigSpec<String> SOURCE_CONFIG =
             Configuration.stringSetting("source", "message");
 
     private String sourceField;
 
-    public JavaFilterExample(Configuration config, Context context) {
+    public ReverseString(Configuration config, Context context) {
         // constructors should validate configuration options
         this.sourceField = config.get(SOURCE_CONFIG);
     }
