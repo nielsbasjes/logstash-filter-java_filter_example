@@ -18,8 +18,8 @@
         <maven.compiler.target>1.8</maven.compiler.target>
 
         <!-- The java package of the filter class. -->
-        <filter.package>nl.example.logstash</filter.package>
-        <filter.package.dir>nl/example/logstash</filter.package.dir>
+        <filter.package>org.logstash.filters.nl.example.logstash</filter.package>
+        <filter.package.dir>org/logstash/filters/nl/example/logstash</filter.package.dir>
 
         <!-- IMPORTANT: The name and the class of the filter must be the SAME where -->
         <!-- the filter.name is lowercase with '_' -->
