@@ -1,7 +1,8 @@
-package org.example.logstash;
+package nl.example.logstash;
 
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
+import nl.example.logstash.ReverseString;
 import org.junit.Assert;
 import org.junit.Test;
 import org.logstash.Event;

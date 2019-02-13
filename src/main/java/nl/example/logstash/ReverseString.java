@@ -1,4 +1,4 @@
-package org.example.logstash;
+package nl.example.logstash;
 
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;
